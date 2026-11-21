@@ -9,11 +9,12 @@ pub struct Imported {
     pub theme: Theme,
 }
 
-pub fn isolate_home() {
-    let home = tempfile::tempdir().expect("temp dir").keep();
+/// Point HOME and every XDG dir at a new temp dir
+pub fn isolate_home() -> tempfile::TempDir {
+    let home = tempfile::tempdir().expect("temp dir");
     // SAFETY: called first thing in main, before any other thread exists.
     unsafe {
-        std::env::set_var("HOME", &home);
+        std::env::set_var("HOME", home.path());
         for (key, dir) in [
             ("XDG_CONFIG_HOME", "config"),
             ("XDG_DATA_HOME", "data"),
@@ -22,9 +23,10 @@ pub fn isolate_home() {
             ("XDG_DATA_DIRS", "system"),
             ("XDG_CONFIG_DIRS", "system-config"),
         ] {
-            std::env::set_var(key, home.join(dir));
+            std::env::set_var(key, home.path().join(dir));
         }
     }
+    home
 }
 
 pub fn import(zip: &Path) -> Result<Imported, String> {

@@ -11,6 +11,7 @@ pub struct Pin {
     pub developer: Element,
     pub project_license: Element,
     pub metadata_license: Option<Element>,
+    pub screenshots: Option<Element>,
 }
 
 impl Pin {
@@ -88,6 +89,11 @@ impl Pin {
             license => license.cloned(),
         };
 
+        let screenshots = root.get_child("screenshots").cloned();
+        if let Some(screenshots) = &screenshots {
+            check_screenshots(screenshots)?;
+        }
+
         Ok(Self {
             id,
             url,
@@ -96,6 +102,7 @@ impl Pin {
             developer,
             project_license,
             metadata_license,
+            screenshots,
         })
     }
 }
@@ -110,6 +117,40 @@ fn is_folder(path: &str) -> bool {
                 .chars()
                 .all(|c| c.is_ascii_alphanumeric() || "._-".contains(c))
     })
+}
+
+/// Each screenshot needs an image, and every image must be an https URL
+fn check_screenshots(screenshots: &Element) -> Result<(), String> {
+    let mut count = 0;
+    for shot in children(screenshots, "screenshot") {
+        count += 1;
+        let mut images = 0;
+        for image in children(shot, "image") {
+            images += 1;
+            let url = text(image).unwrap_or_default();
+            let parsed = appstream::url::Url::parse(&url);
+            if !parsed.is_ok_and(|u| u.scheme() == "https") {
+                return Err(format!(
+                    "a screenshot <image> must be an https URL: {url:?}"
+                ));
+            }
+        }
+        if images == 0 {
+            return Err("a <screenshot> needs an <image>".into());
+        }
+    }
+    if count == 0 {
+        return Err("<screenshots> has no <screenshot>".into());
+    }
+    Ok(())
+}
+
+fn children<'a>(parent: &'a Element, name: &'a str) -> impl Iterator<Item = &'a Element> {
+    parent
+        .children
+        .iter()
+        .filter_map(|node| node.as_element())
+        .filter(move |e| e.name == name)
 }
 
 fn text(element: &Element) -> Option<String> {

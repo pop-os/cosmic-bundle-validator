@@ -68,6 +68,7 @@ fn component(pin: &Pin, zip: &[u8], base_url: &str) -> Result<Element, String> {
     let replaced = |name: &str| {
         ["developer", "releases", "icon", "project_license"].contains(&name)
             || (name == "metadata_license" && pin.metadata_license.is_some())
+            || (name == "screenshots" && pin.screenshots.is_some())
     };
     component
         .children
@@ -87,6 +88,11 @@ fn component(pin: &Pin, zip: &[u8], base_url: &str) -> Result<Element, String> {
     let licenses = [Some(&pin.project_license), pin.metadata_license.as_ref()];
     for license in licenses.into_iter().flatten() {
         component.children.push(XMLNode::Element(license.clone()));
+    }
+    if let Some(screenshots) = &pin.screenshots {
+        component
+            .children
+            .push(XMLNode::Element(screenshots.clone()));
     }
 
     if component.get_child("provides").is_none() {

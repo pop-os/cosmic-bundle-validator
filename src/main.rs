@@ -15,7 +15,8 @@ const USAGE: &str = "usage:
 fn main() -> ExitCode {
     let args: Vec<PathBuf> = std::env::args_os().skip(1).map(PathBuf::from).collect();
     let args: Vec<&Path> = args.iter().map(PathBuf::as_path).collect();
-    import::isolate_home();
+    // Kept until main returns, then deleted with everything imported into it.
+    let _home = import::isolate_home();
     let result = match args.as_slice() {
         [cmd, zip] if *cmd == Path::new("validate") => validate(zip),
         [cmd, pin] if *cmd == Path::new("build") => build(pin, Path::new("out")),

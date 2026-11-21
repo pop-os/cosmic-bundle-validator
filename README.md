@@ -24,5 +24,12 @@ cosmic-bundle-validator catalog <bundle-dir> <out-dir>
   <project_license>GPL-3.0-or-later</project_license>
   <!-- optional -->
   <metadata_license>CC0-1.0</metadata_license>
+  <!-- optional, each image must be an https URL -->
+  <screenshots>
+    <screenshot type="default">
+      <image>https://example.com/screenshot.png</image>
+      <caption>The desktop with this theme</caption>
+    </screenshot>
+  </screenshots>
 </bundle>
 ```
