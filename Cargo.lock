@@ -534,7 +534,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-bundle-validator"
-version = "0.3.3"
+version = "0.3.4"
 dependencies = [
  "appstream",
  "base64 0.23.1",
